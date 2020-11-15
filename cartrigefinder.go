@@ -18,17 +18,18 @@ func getToken() string {
 	return strings.TrimSpace(string(data))
 }
 
-func getCustomerNameById(id int64) (string, string) {
-	var name, address string
+func getCustomerNameById(id int64) (string, string, string) {
+	var name, address, phone string
 	for _, customer := range db.Customers {
 		if customer.ID == id {
 			name = customer.Name
 			address = customer.Address
+			phone = customer.Phone
 			break
 		}
 	}
 
-	return name, address
+	return name, address, phone
 }
 
 func main() {
@@ -59,8 +60,8 @@ func main() {
 		}
 
 		if update.Message.Text == "Заменить картридж" {
-			customerName, customerAddress := getCustomerNameById(update.Message.Chat.ID)
-			text := fmt.Sprintf("Поступила заявка от пользователя %s (ID: %d, адрес: %s)", customerName, update.Message.Chat.ID, customerAddress)
+			customerName, customerAddress, customerPhone := getCustomerNameById(update.Message.Chat.ID)
+			text := fmt.Sprintf("Поступила новая заявка!\n\nЗаказчик: %s\nID: %d\nАдрес: %s\nТелефон: %s", customerName, update.Message.Chat.ID, customerAddress, customerPhone)
 			msg := tgbotapi.NewMessage(295415523, text)
 			bot.Send(msg)
 
