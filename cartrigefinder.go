@@ -40,12 +40,13 @@ func main() {
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
-
-		log.Printf("%+v\n", update.Message.Chat)
-		log.Printf("[%s] %s", update.Message.From, update.Message.Text)
-
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		msg.ReplyToMessageID = update.Message.MessageID
+		//log.Printf("%+v\n", update.Message.Chat)
+		if update.Message.Text == "/start" {
+			log.Println("Человек ввёл start")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+			//msg.ReplyToMessageID = update.Message.MessageID
+			msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(tgbotapi.NewKeyboardButton("Заменить картридж")))
+		}
 
 		bot.Send(msg)
 	}
