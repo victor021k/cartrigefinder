@@ -18,21 +18,35 @@ func getToken() string {
 	return strings.TrimSpace(string(data))
 }
 
-func getCustomerDataById(id int64) (string, string, string, string, string, string) {
-	var name, address, phone, printer, cartrige, comment string
+func getCustomerDataById(id int64) *db.Customer {
 	for _, customer := range db.Customers {
 		if customer.ID == id {
-			name = customer.Name
-			address = customer.Address
-			phone = customer.Phone
-			printer = customer.Printer
-			cartrige = customer.Cartrige
-			comment = customer.Comment
-			break
+			return &customer
 		}
 	}
+	return nil
+}
 
-	return name, address, phone, printer, cartrige, comment
+func getCustomersDataByAddress(text string) []db.Customer {
+	fields := strings.Fields(text)
+	matchedCustomers := []db.Customer{}
+Customers:
+	for _, customer := range db.Customers {
+		for _, field := range fields {
+			if !strings.Contains(customer.Address, field) {
+				continue Customers
+			}
+		}
+		matchedCustomers = append(matchedCustomers, customer)
+	}
+	return matchedCustomers
+}
+
+func addCommentIfExist(text, comment string) string {
+	if comment != "" {
+		text += "\nПримечание: " + comment
+	}
+	return text
 }
 
 func main() {
@@ -62,20 +76,28 @@ func main() {
 		}
 
 		if update.Message.Text == "Заменить картридж" {
-			customerName, customerAddress, customerPhone, customerPrinter, customerCartrige, customerComment := getCustomerDataById(update.Message.Chat.ID)
-			text := fmt.Sprintf("Поступила новая заявка!\n\nЗаказчик: %s\nID: %d\nАдрес: %s\nТелефон: %s\nПринтер: %s\nКартридж: %s", customerName, update.Message.Chat.ID, customerAddress, customerPhone, customerPrinter, customerCartrige)
-			if customerComment != "" {
-				text += "\nПримечание: " + customerComment
-			}
+			customer := getCustomerDataById(update.Message.Chat.ID)
+			text := fmt.Sprintf("Поступила новая заявка!\n\nЗаказчик: %s\nID: %d\nАдрес: %s\nТелефон: %s\nПринтер: %s\nКартридж: %s", customer.Name, update.Message.Chat.ID, customer.Address, customer.Phone, customer.Printer, customer.Cartrige)
+			text = addCommentIfExist(text, customer.Comment)
 
 			msg := tgbotapi.NewMessage(295415523, text)
 			bot.Send(msg)
-			msg = tgbotapi.NewMessage(831891756, text)
-			bot.Send(msg)
+			//msg = tgbotapi.NewMessage(831891756, text)
+			//bot.Send(msg)
 
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Ваша заявка принята! Ожидайте!\n\nМы свяжемся с Вами в ближайшее время!")
 			bot.Send(msg)
 		}
 
+		if update.Message.Chat.ID == 295415523 {
+			customers := getCustomersDataByAddress(update.Message.Text)
+			text := fmt.Sprintf("Найдены следующие совпадения:")
+			for _, customer := range customers {
+				text += fmt.Sprintf("\n\nЗаказчик: %s\nID: %d\nАдрес: %s\nТелефон: %s\nПринтер: %s\nКартридж: %s", customer.Name, customer.ID, customer.Address, customer.Phone, customer.Printer, customer.Cartrige)
+				text = addCommentIfExist(text, customer.Comment)
+			}
+			msg := tgbotapi.NewMessage(295415523, text)
+			bot.Send(msg)
+		}
 	}
 }
