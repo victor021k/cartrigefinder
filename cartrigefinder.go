@@ -28,20 +28,15 @@ func getCustomerDataById(id int64) *db.Customer {
 }
 
 func getCustomersDataByAddress(text string) []db.Customer {
-	log.Println(text)
 	fields := strings.Fields(text)
-	log.Println(fields)
 	matchedCustomers := []db.Customer{}
 Customers:
 	for _, customer := range db.Customers {
-		log.Println("Адрес, который проверяем:", customer.Address)
 		for _, field := range fields {
-			if !strings.Contains(customer.Address, field) {
+			if !strings.Contains(strings.ToLower(customer.Address), strings.ToLower(field)) {
 				continue Customers
 			}
-			log.Println("Вот это слово есть в адресе", field)
 		}
-		log.Println("Совпадение найдено для адреса:", customer.Address)
 		matchedCustomers = append(matchedCustomers, customer)
 	}
 	return matchedCustomers
@@ -87,21 +82,24 @@ func main() {
 
 			msg := tgbotapi.NewMessage(295415523, text)
 			bot.Send(msg)
-			//msg = tgbotapi.NewMessage(831891756, text)
-			//bot.Send(msg)
+			msg = tgbotapi.NewMessage(831891756, text)
+			bot.Send(msg)
 
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Ваша заявка принята! Ожидайте!\n\nМы свяжемся с Вами в ближайшее время!")
 			bot.Send(msg)
 		}
 
-		if update.Message.Chat.ID == 295415523 {
+		if update.Message.Chat.ID == 295415523 || update.Message.Chat.ID == 831891756 || update.Message.Chat.ID == 1325248237 {
 			customers := getCustomersDataByAddress(update.Message.Text)
-			text := fmt.Sprintf("Найдены следующие совпадения:")
+			text := "Найдены следующие совпадения:"
 			for _, customer := range customers {
 				text += fmt.Sprintf("\n\nЗаказчик: %s\nID: %d\nАдрес: %s\nТелефон: %s\nПринтер: %s\nКартридж: %s", customer.Name, customer.ID, customer.Address, customer.Phone, customer.Printer, customer.Cartrige)
 				text = addCommentIfExist(text, customer.Comment)
 			}
-			msg := tgbotapi.NewMessage(295415523, text)
+			if len(customers) == 0 {
+				text = "Совпадения не найдены"
+			}
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 			bot.Send(msg)
 		}
 	}
