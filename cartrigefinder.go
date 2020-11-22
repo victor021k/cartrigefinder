@@ -47,7 +47,7 @@ func main() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	updates, _ := bot.GetUpdatesChan(u)
 
 	for update := range updates {
 		if update.Message == nil { // ignore any non-Message Updates
@@ -63,7 +63,11 @@ func main() {
 
 		if update.Message.Text == "Заменить картридж" {
 			customerName, customerAddress, customerPhone, customerPrinter, customerCartrige, customerComment := getCustomerDataById(update.Message.Chat.ID)
-			text := fmt.Sprintf("Поступила новая заявка!\n\nЗаказчик: %s\nID: %d\nАдрес: %s\nТелефон: %s\nПринтер: %s\nКартридж: %s\nПримечание: %s", customerName, update.Message.Chat.ID, customerAddress, customerPhone, customerPrinter, customerCartrige, customerComment)
+			text := fmt.Sprintf("Поступила новая заявка!\n\nЗаказчик: %s\nID: %d\nАдрес: %s\nТелефон: %s\nПринтер: %s\nКартридж: %s", customerName, update.Message.Chat.ID, customerAddress, customerPhone, customerPrinter, customerCartrige)
+			if customerComment != "" {
+				text += "\nПримечание: " + customerComment
+			}
+
 			msg := tgbotapi.NewMessage(295415523, text)
 			bot.Send(msg)
 			msg = tgbotapi.NewMessage(831891756, text)
