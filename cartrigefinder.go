@@ -28,15 +28,20 @@ func getCustomerDataById(id int64) *db.Customer {
 }
 
 func getCustomersDataByAddress(text string) []db.Customer {
+	log.Println(text)
 	fields := strings.Fields(text)
+	log.Println(fields)
 	matchedCustomers := []db.Customer{}
 Customers:
 	for _, customer := range db.Customers {
+		log.Println("Адрес, который проверяем:", customer.Address)
 		for _, field := range fields {
 			if !strings.Contains(customer.Address, field) {
 				continue Customers
 			}
+			log.Println("Вот это слово есть в адресе", field)
 		}
+		log.Println("Совпадение найдено для адреса:", customer.Address)
 		matchedCustomers = append(matchedCustomers, customer)
 	}
 	return matchedCustomers
