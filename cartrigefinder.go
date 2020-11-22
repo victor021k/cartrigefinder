@@ -70,8 +70,8 @@ func main() {
 
 			msg := tgbotapi.NewMessage(295415523, text)
 			bot.Send(msg)
-			msg = tgbotapi.NewMessage(831891756, text)
-			bot.Send(msg)
+			//msg = tgbotapi.NewMessage(831891756, text)
+			//bot.Send(msg)
 
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Ваша заявка принята! Ожидайте!\n\nМы свяжемся с Вами в ближайшее время!")
 			bot.Send(msg)
